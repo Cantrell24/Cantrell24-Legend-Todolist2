@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect} from "react";
 
 //include images into your bundle
 import rigoImage from "../../img/rigo-baby.jpg";
@@ -7,8 +7,30 @@ import rigoImage from "../../img/rigo-baby.jpg";
 const Home = () => {
 	const [ inputValue, setInputValue] = useState("");
 	const [todos, setTodos] = useState([]);
-
-
+	let backendURL = "https://playground.4geeks.com/apis/fake/todos/user/cantrell24"
+	const getTodos = () => {
+		fetch(backendURL)
+		.then(response => response.json())
+		.then(data => setTodos(data))
+		.catch(error => console.log(error))
+	}
+	const updateAPI = (newTodos) => {
+		let opt = {
+			method: "PUT",
+			"Content-Type": "application/json",
+			body: JSON.stringify(newTodos)
+		}
+		fetch(backendURL, opt)
+		.then(response => response.json())
+		.then (data => {
+			console.log(data)
+			getTodos()
+		})
+		.catch(error => console.log(error))
+	}
+	useEffect(() => {
+		getTodos()
+	}, [])
 
 	return (
 		
@@ -22,7 +44,7 @@ const Home = () => {
 						value={inputValue}
 						onKeyDown={(e) => {
 							if (e.key === "Enter") {
-							  setTodos([...todos, inputValue]);
+							  updateAPI([...todos, {label:inputValue, done:false}]);
 							  setInputValue("");
 							}
 						  }}
@@ -33,8 +55,8 @@ const Home = () => {
 						
 				</li>
 				{todos.map((todo,index)=>{
-					return <li key= {index}>{todo}<i onClick={() =>
-						setTodos(
+					return <li key= {index}>{todo.label}<i onClick={() =>
+						updateAPI(
 							todos.filter(
 								(t, currentIndex) =>
 									index != currentIndex
